@@ -90,4 +90,5 @@
     <string name="invoices">الفواتير</string>
     <string name="orderDownloads">تحميلات الطلبات</string>
 
+    <string name="passwordnotcorrect">اسم المستخدم او كلمة السر غير صحيحة!</string>
 </resources>

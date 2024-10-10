@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary_1">#3F51B5</color> <!-- Indigo -->
-    <color name="primary_2">#2196F3</color> <!-- Blue -->
-    <color name="primary_3">#1976D2</color> <!-- Blue Dark -->
+    <color name="primary_1">#283593</color> <!-- Darker Indigo for a more professional look -->
+    <color name="primary_2">#1E88E5</color> <!-- Slightly darker Blue for contrast -->
+    <color name="primary_3">#1565C0</color> <!-- Deep Blue for highlighting important elements -->
 
-    <color name="accent_1">#FFC107</color> <!-- Amber -->
-    <color name="accent_2">#4CAF50</color> <!-- Green -->
-    <color name="accent_3">#FF5722</color> <!-- Deep Orange -->
+    <color name="accent_1">#FFB300</color> <!-- A more subtle Amber to maintain brightness without being too overwhelming -->
+    <color name="accent_2">#43A047</color> <!-- A slightly deeper Green for a balanced feel -->
+    <color name="accent_3">#E64A19</color> <!-- A muted Deep Orange for call-to-action elements without being too harsh -->
 
-    <color name="black">#212121</color> <!-- Dark Gray -->
-    <color name="white">#FAFAFA</color> <!-- Light Gray -->
-    <color name="gray">#BDBDBD</color> <!-- Medium Gray -->
+    <color name="black">#1C1C1C</color> <!-- Slightly darker gray for text and essential elements -->
+    <color name="white">#F5F5F5</color> <!-- Softer white for background -->
+    <color name="gray">#9E9E9E</color> <!-- A calmer Medium Gray for dividers and secondary elements -->
 </resources>

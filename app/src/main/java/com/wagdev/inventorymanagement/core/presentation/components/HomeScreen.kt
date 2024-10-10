@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -42,6 +43,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -73,14 +75,14 @@ fun HomeScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp) // Set a fixed height for the Box
+                .height(110.dp) // Set a fixed height for the Box
         ) {
             Image(
                 painter = painterResource(id = R.drawable.beauty),
                 contentDescription = stringResource(id = R.string.app_name),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp) // Adjust height as needed
+                    .height(110.dp) // Adjust height as needed
                     .clip(
                         GenericShape { size, _ ->
                             val path = Path().apply {
@@ -105,7 +107,7 @@ fun HomeScreen(
                 text = stringResource(id = R.string.specialite),
                 style = TextStyle(
                     color = Color.Black,
-                    fontSize = 30.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 ),
                 modifier = Modifier
@@ -134,7 +136,7 @@ fun HomeScreen(
                         1 -> IconWithText(iconRes = R.drawable.products, label = stringResource(id = R.string.products), des = "home/2", navController = navController)
                         2 -> IconWithText(iconRes = R.drawable.clients, label = stringResource(id = R.string.clients), des = "home/3", navController = navController)
                         3 -> IconWithText(iconRes = R.drawable.factors, label = stringResource(id = R.string.orders), des = "home/4", navController = navController)
-                        4 -> IconWithText(iconRes = R.drawable.inventorylogo, label = stringResource(id = R.string.invoices), des = "downloads", navController = navController)
+                        4 -> IconWithText(iconRes = R.drawable.files, label = stringResource(id = R.string.invoices), des = "downloads", navController = navController)
                     }
                 }
             }
@@ -142,7 +144,7 @@ fun HomeScreen(
 
         // Bottom Section with Image and Buttons
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = stringResource(id = R.string.top_s_products), style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold))
+        Text(text = stringResource(id = R.string.top_s_products), style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold))
         Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier
@@ -183,7 +185,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun IconWithText(iconRes: Int, label: String, size: Dp = 110.dp,des:String,navController: NavController) {
+fun IconWithText(iconRes: Int, label: String, size: Dp = 90.dp,des:String,navController: NavController) {
     Box(
         modifier = Modifier
             .size(size)
@@ -197,10 +199,10 @@ fun IconWithText(iconRes: Int, label: String, size: Dp = 110.dp,des:String,navCo
             Image(
                 painter = painterResource(id = iconRes),
                 contentDescription = label,
-                modifier = Modifier.size(83.dp) // Adjust this size as needed
+                modifier = Modifier.size(73.dp) // Adjust this size as needed
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = label, style = TextStyle(fontSize = 17.sp))
+            Text(text = label, style = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold))
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.wagdev.inventorymanagement.auth_feature.presentation
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wagdev.inventorymanagement.auth_feature.domain.model.Login
@@ -18,7 +20,9 @@ class LoginViewModel @Inject constructor(
 
     private val _loginState = MutableStateFlow<Boolean?>(null)
     val loginState: StateFlow<Boolean?> = _loginState
-
+    var isError by mutableStateOf(
+        false
+    )
     init {
         viewModelScope.launch {
             // Insert default user if no users exist in the database
@@ -39,13 +43,16 @@ class LoginViewModel @Inject constructor(
                     if(isAuthenticated!=null){
                         if(isAuthenticated.username!=Login.USER1 || isAuthenticated.password!=Login.PASS1){
                             _loginState.value = false
+                            isError=true
                             onLoginResult(false)
                         }else{
                             _loginState.value = true
+                            isError=false
                             onLoginResult(true)
                         }
                     }else{
                         _loginState.value=false
+                        isError=true
                         onLoginResult(false)
                     }
 

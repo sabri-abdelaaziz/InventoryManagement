@@ -16,7 +16,7 @@
     <string name="customers">Clients</string>
     <string name="c_details">Détails des clients</string>
     <string name="no_clients_found">Aucun client disponible</string>
-    <string name="cols">Colonnes</string>
+    <string name="cols">Cols</string>
     <string name="search">Rechercher...</string>
     <string name="client_details">Détails du client</string>
     <string name="name">Nom</string>
@@ -92,4 +92,5 @@
     <string name="orderDownloads">Téléchargements de commandes</string>
 
 
+    <string name="passwordnotcorrect">Username ou Password incorrect!</string>
 </resources>

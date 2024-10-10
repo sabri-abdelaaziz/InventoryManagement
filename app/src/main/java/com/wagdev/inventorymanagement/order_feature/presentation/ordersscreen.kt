@@ -639,14 +639,14 @@ fun BottomSheetContent(
 
                 IconButton(onClick = {
 
-                    generateAndDownloadPdf(orderDetails.value, context, client.value, products.value,order)
+                    generateAndDownloadPdf(orderDetails.value, context, client.value, products.value,order,order.id_order)
 
                 }) {
                     Icon(Icons.Default.Download, contentDescription = "Download PDF")
                 }
                 IconButton(onClick = {
                     // Share the PDF file
-                    val file = generateAndDownloadPdf(orderDetails.value, context, client.value, products.value, order)
+                    val file = generateAndDownloadPdf(orderDetails.value, context, client.value, products.value, order,order.id_order)
                     if (file != null) {
                         sharePdfFile(context, file)
                     }
@@ -656,7 +656,7 @@ fun BottomSheetContent(
 
                 IconButton(onClick = {
                     // Share via WhatsApp
-                    val file = generateAndDownloadPdf(orderDetails.value, context, client.value, products.value, order)
+                    val file = generateAndDownloadPdf(orderDetails.value, context, client.value, products.value, order,order.id_order)
                     if (file != null) {
                         shareViaWhatsApp(context, file)
                     }
@@ -831,7 +831,8 @@ fun generateAndDownloadPdf(
     context: Context,
     client: Client?,
     products: List<Product>,
-    order: Order
+    order: Order,
+    id_order:Long
 ): File? {
     val pdfDocument = PdfDocument()
     val textPaint = Paint().apply {
@@ -863,28 +864,30 @@ fun generateAndDownloadPdf(
     val scaledLogoBitmap = Bitmap.createScaledBitmap(logoBitmap, 100, 100, false) // adjust size as needed
     canvas.drawBitmap(scaledLogoBitmap, 670f, 40f, null) // adjust position as needed
 
+    // Translated French Content
     canvas.drawText("Wagazi", 40f, 60f, titlePaint)
-    canvas.drawText("2 res essafea", 40f, 85f, textPaint)
+    canvas.drawText("2 Rés Essafa", 40f, 85f, textPaint)
     canvas.drawText("Hay Essalam", 40f, 105f, textPaint)
     canvas.drawText("Agadir", 40f, 125f, textPaint)
 
-    canvas.drawText("Invoice Number", 400f, 60f, textPaint)
-    canvas.drawText(order.id_order.toString(), 550f, 60f, textPaint)
-    canvas.drawText("ORDER DATE : ", 400f, 90f, textPaint)
-    canvas.drawText(timestampToDate(order.orderDate), 550f, 90f, textPaint)
+    canvas.drawText("Numéro de Facture", 400f, 60f, textPaint)
+    canvas.drawText("${order.id_order}", 550f, 60f, textPaint)
+    canvas.drawText("DATE DE COMMANDE :", 400f, 90f, textPaint)
+    canvas.drawText(timestampToDate(order.orderDate), 580f, 90f, textPaint)
 
-    canvas.drawText("BILLED TO", 40f, 180f, titlePaint)
-    canvas.drawText("CUSTOMER : Mr ", 40f, 240f, textPaint)
+    canvas.drawText("FACTURÉ À", 40f, 180f, titlePaint)
+    canvas.drawText("CLIENT : M. ", 40f, 240f, textPaint)
     client?.name?.let { canvas.drawText(it, 140f, 240f, textPaint) }
-    canvas.drawText("address : ", 40f, 260f, textPaint)
+    canvas.drawText("Adresse : ", 40f, 260f, textPaint)
     client?.address?.let { canvas.drawText(it, 150f, 260f, textPaint) }
 
+    // Table headers
     canvas.drawRect(40f, 300f, 750f, 340f, headerPaint)
     canvas.drawText("IMAGE", 60f, 320f, cellPaint)
-    canvas.drawText("ITEMS", 140f, 320f, cellPaint)
-    canvas.drawText("PRICE", 300f, 320f, cellPaint)
-    canvas.drawText("QTY", 400f, 320f, cellPaint)
-    canvas.drawText("SUBTOTAL", 600f, 320f, cellPaint)
+    canvas.drawText("PRODUITS", 140f, 320f, cellPaint)
+    canvas.drawText("PRIX", 300f, 320f, cellPaint)
+    canvas.drawText("QTÉ", 400f, 320f, cellPaint)
+    canvas.drawText("SOUS-TOTAL", 600f, 320f, cellPaint)
 
     var yOffset = 340f
     var grandTotal = 0.0
@@ -904,7 +907,7 @@ fun generateAndDownloadPdf(
                 val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false)
                 canvas.drawBitmap(scaledBitmap, 60f, yOffset, null)
             } ?: run {
-                canvas.drawText("No Image", 60f, yOffset + 20f, textPaint)
+                canvas.drawText("Pas d'image", 60f, yOffset + 20f, textPaint)
             }
 
             val itemTotal = it.price * detail.nbrItems
@@ -928,13 +931,13 @@ fun generateAndDownloadPdf(
 
     // Draw totals
     canvas.drawLine(40f, yOffset + 10f, 750f, yOffset + 10f, textPaint)
-    canvas.drawText("SUBTOTAL", 500f, yOffset + 40f, textPaint)
+    canvas.drawText("SOUS-TOTAL", 500f, yOffset + 40f, textPaint)
     canvas.drawText("${"%.2f".format(grandTotal)} DH", 600f, yOffset + 40f, textPaint)
-    canvas.drawText("SHIPPING ", 500f, yOffset + 60f, textPaint)
+    canvas.drawText("LIVRAISON", 500f, yOffset + 60f, textPaint)
     canvas.drawText("${order.shipping} DH", 600f, yOffset + 60f, textPaint)
-    canvas.drawText("TAX", 500f, yOffset + 80f, textPaint)
+    canvas.drawText("TAXE", 500f, yOffset + 80f, textPaint)
     canvas.drawText("0 DH", 600f, yOffset + 80f, textPaint)
-    canvas.drawText(" TOTAL", 250f, yOffset + 120f, titlePaint)
+    canvas.drawText("TOTAL", 250f, yOffset + 120f, titlePaint)
     canvas.drawText(
         "${"%.2f".format(grandTotal + 0.0 + order.shipping)} DH",
         400f,
@@ -953,7 +956,7 @@ fun generateAndDownloadPdf(
         pdfDocument.writeTo(FileOutputStream(filePath))
         pdfDocument.close()
 
-        Toast.makeText(context, "PDF saved: ${filePath.absolutePath}", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, "PDF enregistré : ${filePath.absolutePath}", Toast.LENGTH_LONG).show()
 
         scanFile(context, filePath)
 
@@ -961,11 +964,12 @@ fun generateAndDownloadPdf(
 
     } catch (e: IOException) {
         e.printStackTrace()
-        Toast.makeText(context, "Failed to save PDF: ${e.message}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Échec de l'enregistrement du PDF : ${e.message}", Toast.LENGTH_SHORT).show()
     }
 
     return null // Return null in case of failure
 }
+
 
 
 

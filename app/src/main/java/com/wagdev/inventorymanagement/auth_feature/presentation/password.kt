@@ -50,10 +50,11 @@ import com.wagdev.inventorymanagement.core.util.Routes
 
 @Composable
 fun Password(modifier: Modifier = Modifier, navController: NavController,loginViewModel: LoginViewModel= hiltViewModel()) {
-    val username = remember { mutableStateOf("") }
+    val username = remember { mutableStateOf("user") }
     val pass = remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     val login=loginViewModel.loginState.collectAsState(initial = false)
+    val isError=loginViewModel.isError
     Box(
         modifier = Modifier
             .fillMaxSize(),
@@ -67,7 +68,7 @@ fun Password(modifier: Modifier = Modifier, navController: NavController,loginVi
             Text(stringResource(id=R.string.authentication),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(25.dp),
+                    .padding(20.dp),
                 textAlign = TextAlign.Start,
                 textDecoration = TextDecoration.Underline,
                 style = TextStyle(
@@ -75,8 +76,8 @@ fun Password(modifier: Modifier = Modifier, navController: NavController,loginVi
                     color = Color.Black,
                     textAlign=TextAlign.Start,
                     fontStyle = FontStyle.Normal,
-                    fontSize = 35.sp,
-                    shadow = Shadow(color = Color.Gray, offset = Offset(20.0F,20.0F), blurRadius = 4.0F)
+                    fontSize = 28.sp,
+                    shadow = Shadow(color = Color.Gray, offset = Offset(10.0F,10.0F), blurRadius = 2.0F)
                 )
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -118,7 +119,9 @@ fun Password(modifier: Modifier = Modifier, navController: NavController,loginVi
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-
+           if (isError){
+               Text(stringResource(id = R.string.passwordnotcorrect) , style = TextStyle(color = Color.Red))
+           }
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = {
 

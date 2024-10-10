@@ -88,4 +88,5 @@
     <string name="authentication">Authentication</string>
     <string name="invoices">Invoices</string>
     <string name="orderDownloads">Orders Downloads</string>
+    <string name="passwordnotcorrect">Username or Password incorrect!</string>
 </resources>

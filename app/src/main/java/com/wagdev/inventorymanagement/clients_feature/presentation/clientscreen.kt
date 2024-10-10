@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -252,7 +253,7 @@ fun ClientItemView(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface),
+                    .background(Color(0x95791D00)),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -260,44 +261,44 @@ fun ClientItemView(
                     painter = painterResource(id = com.wagdev.inventorymanagement.R.drawable.clients),
                     contentDescription = client.name,
                     modifier = Modifier
-                        .size(100.dp)
-                        .padding(end = 16.dp)
-                        .clip(RoundedCornerShape(20.dp)),
+                        .size(70.dp)
+                        .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
                 Column(
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
-                        .fillMaxHeight()
-                        .background(MaterialTheme.colorScheme.surface),
+                        .fillMaxHeight(),
                 ) {
                     Text(
                         text = client.name,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
+                        style = TextStyle(color = Color.White)
 
                     )
                     Text(text = stringResource(id = R.string.phone)+" : ${client.phoneNumber}",
-                        style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
+                        style = TextStyle(color = Color.White)
                     )
                     Text(text = stringResource(id = R.string.addr)+" : ${client.address}",
-                        style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
+                        style = TextStyle(color = Color.White)
                     )
                 }
                 IconButton(
                     onClick = { /* Handle Details action */ },
                     modifier = Modifier.align(Alignment.CenterVertically)
                 ) {
-                    Icon(Icons.Default.ArrowForward, contentDescription = null)
-                }
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary // Use a color from your theme
+                    )  }
             }
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-                    .background(MaterialTheme.colorScheme.surface)
                     .fillMaxHeight(), // Ensures the column uses the full height
                 verticalArrangement = Arrangement.Center
             ) {

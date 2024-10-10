@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -241,35 +242,38 @@ fun ProductItemView(product: Product, productsInRow: Int, onClick: () -> Unit) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface),
+                    .background(Color(0x95AD644D)),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                product.image?.let { ProductImage(it,modifier = Modifier.size(100.dp)) }
+                product.image?.let { ProductImage(it,modifier = Modifier.size(70.dp)) }
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(
                     modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .background(MaterialTheme.colorScheme.surface),
+                        .align(Alignment.CenterVertically),
                 ) {
                     Text(
                         text = product.title,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
+                        style = TextStyle(color = Color.White)
                     )
                     Text(text = stringResource(id = R.string.price)+" : ${product.price}",
-                        style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
+                        style = TextStyle(color =Color.White)
                     )
                     Text(text = stringResource(id = R.string.stock)+" : ${product.nbrItems} "+stringResource(id = R.string.items),
-                        style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
+                        style = TextStyle(color = Color.White)
                     )
                     Text(text = stringResource(id = R.string.nbr_boxes)+" : ${product.nbrBoxes} "+stringResource(id = R.string.boxes),
-                        style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
+                        style = TextStyle(color = Color.White)
                     )
                 }
                 IconButton(onClick = { /* Handle action */ }) {
-                    Icon(Icons.Default.ArrowForward, contentDescription = null)
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary // Use a color from your theme
+                    )
                 }
             }
         } else {

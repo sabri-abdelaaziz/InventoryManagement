@@ -21,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -89,9 +90,12 @@ fun PdfListScreen(context: Context, navController: NavController) {
     val pdfFiles = remember { mutableStateListOf<File>() }
     val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
 
-    // Fetch all PDF files
-    val files = downloadsDir.listFiles { file -> file.extension == "pdf" }
-    files?.let { pdfFiles.addAll(it.sortedByDescending { it.lastModified() }) }
+    // Load files only once using LaunchedEffect
+    LaunchedEffect(key1 = downloadsDir) {
+        pdfFiles.clear()  // Clear the list before adding new files to avoid duplicates
+        val files = downloadsDir.listFiles { file -> file.extension == "pdf" }
+        files?.let { pdfFiles.addAll(it.sortedByDescending { it.lastModified() }) }
+    }
 
     Scaffold(
         topBar = {
@@ -112,10 +116,8 @@ fun PdfListScreen(context: Context, navController: NavController) {
                     .fillMaxSize()
                     .padding(it)  // Adjust padding for the Scaffold's top bar
             ) {
-                // Check if there are any PDF files
                 if (pdfFiles.isEmpty()) {
                     item {
-                        // Display a message if no PDF files are found
                         Text(
                             text = "No order files available.",
                             fontSize = 18.sp,
