@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_1">#3F51B5</color> <!-- Indigo -->
+    <color name="primary_2">#2196F3</color> <!-- Blue -->
+    <color name="primary_3">#1976D2</color> <!-- Blue Dark -->
+
+    <color name="accent_1">#FFC107</color> <!-- Amber -->
+    <color name="accent_2">#4CAF50</color> <!-- Green -->
+    <color name="accent_3">#FF5722</color> <!-- Deep Orange -->
+
+    <color name="black">#212121</color> <!-- Dark Gray -->
+    <color name="white">#FAFAFA</color> <!-- Light Gray -->
+    <color name="gray">#BDBDBD</color> <!-- Medium Gray -->
+</resources>

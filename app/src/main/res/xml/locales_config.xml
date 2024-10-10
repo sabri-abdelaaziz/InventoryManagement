@@ -1,0 +1,7 @@
+<!-- res/xml/locales_config.xml -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en"/> <!-- English -->
+    <locale android:name="fr"/> <!-- French -->
+    <locale android:name="ar"/> <!-- arabic -->
+    <!-- Add more languages as needed -->
+</locale-config>
