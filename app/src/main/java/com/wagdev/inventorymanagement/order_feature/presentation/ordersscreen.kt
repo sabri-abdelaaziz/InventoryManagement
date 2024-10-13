@@ -12,9 +12,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,8 +29,6 @@ import com.wagdev.inventorymanagement.clients_feature.domain.model.Client
 import com.wagdev.inventorymanagement.clients_feature.presentation.ClientEvent
 import com.wagdev.inventorymanagement.clients_feature.presentation.ClientStatus
 import com.wagdev.inventorymanagement.clients_feature.presentation.ClientViewModel
-import com.wagdev.inventorymanagement.core.util.Routes
-
 import com.wagdev.inventorymanagement.order_feature.domain.model.Order
 import com.wagdev.inventorymanagement.order_feature.presentation.OrderEvent
 import com.wagdev.inventorymanagement.order_feature.presentation.OrderStatus
@@ -49,33 +44,27 @@ import android.os.Environment
 import android.widget.Toast
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.runtime.Composable
-import kotlinx.coroutines.flow.filter
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.provider.MediaStore
 import androidx.core.content.FileProvider
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.ActivityNotFoundException
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.BitmapShader
-import android.graphics.Canvas
-import android.graphics.RectF
-import android.graphics.Shader
 import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Whatsapp
@@ -84,6 +73,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -94,10 +84,9 @@ import com.wagdev.inventorymanagement.products_feature.domain.model.Product
 import com.wagdev.inventorymanagement.products_feature.presentation.ProductEvent
 import com.wagdev.inventorymanagement.products_feature.presentation.ProductStatus
 import com.wagdev.inventorymanagement.products_feature.presentation.ProductViewModel
-import kotlinx.coroutines.delay
 import coil.compose.AsyncImage
-import com.google.android.gms.common.SignInButton
-import com.wagdev.inventorymanagement.products_feature.presentation.serializeProduct
+import kotlinx.coroutines.Job
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,22 +96,20 @@ fun OrdersScreen(
     orderViewModel: OrderViewModel = hiltViewModel(),
     clientViewModel: ClientViewModel = hiltViewModel()
 ) {
-    //ids
-    var selectedClientId by remember {
-        mutableStateOf(-1L)
-    }
+    // ids
+    var selectedClientId by remember { mutableStateOf(-1L) }
 
-    //states
+    // states
     val clientState by clientViewModel.status.collectAsState()
     val orderState by orderViewModel.status.collectAsState()
-    //search Query
+    // search Query
     val searchQuery = remember { mutableStateOf("") }
-    //scope
+    // scope
     val scope = rememberCoroutineScope()
     // selected elements
     var selectedOrder by remember { mutableStateOf<Order?>(null) }
     val clients = remember { mutableStateOf<List<Client>>(emptyList()) }
-    var selectedClient by remember { mutableStateOf<String?>(null) }
+    val selectedClient by remember { mutableStateOf<String?>(null) }
 
     // bottom sheet status
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -130,13 +117,12 @@ fun OrdersScreen(
     var expandedForClient by remember { mutableStateOf(false) }
 
     // orders in rows
-
-    var ordersInRow by remember { mutableStateOf(1) }
+    var ordersInRow by remember { mutableIntStateOf(1) }
 
     // Initialize date with the order's date or current date
     val calendar = Calendar.getInstance()
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    var selectedDate by remember { mutableStateOf( dateFormat.format(calendar.time)) }
+    var selectedDate by remember { mutableStateOf(dateFormat.format(calendar.time)) }
 
     // DatePickerDialog to pick a date
     val datePickerDialog = android.app.DatePickerDialog(
@@ -165,18 +151,17 @@ fun OrdersScreen(
     Scaffold(
         topBar = {
             Column {
-                Row(modifier = Modifier.fillMaxWidth(),
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
-
-                    ) {
-                    Text(stringResource(id = R.string.orders_detail),)
+                ) {
+                    Text(stringResource(id = R.string.orders_detail))
                     Button(onClick = { navController.navigate("addeditorder") }) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
-
-                            ) {
+                        ) {
                             Icon(Icons.Default.Add, contentDescription = null)
                             Image(
                                 painter = painterResource(id = R.drawable.store),
@@ -189,11 +174,9 @@ fun OrdersScreen(
                             )
                         }
                     }
-
                 }
                 SearchTopAppBar(searchQuery)
             }
-
         }
     ) { paddingValues ->
         Column(
@@ -247,12 +230,24 @@ fun OrdersScreen(
                     }
                     is OrderStatus.Success -> {
                         val orders = (orderState as OrderStatus.Success).orders.collectAsState(initial = emptyList())
-                        val filteredOrders = orders.value.filter {
-                            clientViewModel.onEvent(ClientEvent.GetClientById(it.clientId))
-                            val client=clientViewModel.client.collectAsState()
-                            client.value?.name?.contains(searchQuery.value, ignoreCase = true) == true
-                            //|| it.product.title.contains(searchQuery.value, ignoreCase = true) ||
-                            //it.order.orderDate.toString().contains(searchQuery.value, ignoreCase = true)
+                        // Collect the clients once to prevent re-evaluation on every composition
+                        val clientsMap = remember(clients.value) { clients.value.associateBy { it.id_client } }
+
+                        // Check if a client is selected and filter accordingly
+                        val filteredOrders = when {
+                            selectedClientId != -1L -> { // If a client is selected
+                                orders.value.filter { order ->
+                                    order.clientId == selectedClientId && // Match selected client
+                                            (searchQuery.value.isEmpty() ||
+                                                    clientsMap[order.clientId]?.name?.contains(searchQuery.value, ignoreCase = true) == true)
+                                }
+                            }
+                            else -> { // No client selected, show all orders
+                                orders.value.filter { order ->
+                                    searchQuery.value.isEmpty() ||
+                                            clientsMap[order.clientId]?.name?.contains(searchQuery.value, ignoreCase = true) == true
+                                }
+                            }
                         }
 
                         if (filteredOrders.isEmpty()) {
@@ -271,11 +266,17 @@ fun OrdersScreen(
                                     contentPadding = PaddingValues(16.dp)
                                 ) {
                                     items(filteredOrders) { order ->
-                                        OrderItemView(order, ordersInRow) {
-                                            selectedOrder = order
-                                            showBottomSheet = true
-                                            scope.launch { sheetState.show() }
-                                        }
+                                        val clientName = clientsMap[order.clientId]?.name ?: ""
+                                        OrderItemView(
+                                            order = order,
+                                            clientName = clientName,
+                                            ordersInRow = ordersInRow,
+                                            onClick = {
+                                                selectedOrder = order
+                                                showBottomSheet = true
+                                                scope.launch { sheetState.show() }
+                                            }
+                                        )
                                     }
                                 }
                             } else {
@@ -286,14 +287,21 @@ fun OrdersScreen(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     items(filteredOrders) { order ->
-                                        OrderItemView(order, ordersInRow) {
-                                            selectedOrder = order
-                                            showBottomSheet = true
-                                            scope.launch { sheetState.show() }
-                                        }
+                                        val clientName = clientsMap[order.clientId]?.name ?: ""
+                                        OrderItemView(
+                                            order = order,
+                                            clientName = clientName,
+                                            ordersInRow = ordersInRow,
+                                            onClick = {
+                                                selectedOrder = order
+                                                showBottomSheet = true
+                                                scope.launch { sheetState.show() }
+                                            }
+                                        )
                                     }
                                 }
                             }
+
                         }
                     }
                     is OrderStatus.Error -> {
@@ -302,7 +310,6 @@ fun OrdersScreen(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
-
                     OrderStatus.Idle -> TODO()
                 }
             }
@@ -313,7 +320,7 @@ fun OrdersScreen(
                         showBottomSheet = false
                         scope.launch { sheetState.hide() }
                     },
-                    sheetState = sheetState
+                    sheetState = sheetState,
                 ) {
                     selectedOrder?.let { order ->
                         BottomSheetContent(
@@ -321,17 +328,21 @@ fun OrdersScreen(
                             onEdit = {
                                 val orderJson = serializeOrder(order)
                                 navController.navigate("addeditorder?order=$orderJson")
-                                scope.launch { sheetState.hide()
-                                    showBottomSheet = false}
+                                scope.launch {
+                                    sheetState.hide()
+                                    showBottomSheet = false
+                                }
                             },
                             onDelete = {
                                 orderViewModel.onEvent(OrderEvent.DeleteOrderDetailAll(order.id_order))
                                 orderViewModel.onEvent(OrderEvent.DeleteOrder(order.id_order))
-                               scope.launch { sheetState.hide()
+                                scope.launch {
+                                    sheetState.hide()
                                     showBottomSheet = false
-                               navController.navigate("home/4")
-                               }
-                            }
+                                    navController.navigate("home/4")
+                                }
+                            },
+                            navController = navController
                         )
                     }
                 }
@@ -339,6 +350,81 @@ fun OrdersScreen(
         }
     }
 }
+
+
+@Composable
+fun OrderItemView(
+    order: Order,
+    clientName: String,
+    ordersInRow: Int,
+    onClick: () -> Unit
+) {
+    val orderViewModel: OrderViewModel = hiltViewModel()
+    val nbrProducts by orderViewModel.getNbrDetailsPerOrder(order.id_order).collectAsState(initial = 0)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { onClick() },
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        if (ordersInRow == 1) {
+            // Horizontal layout
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                ) {
+                    Text(
+                        text = clientName,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
+                    )
+                    Text(text = "Date: ${timestampToDate(order.orderDate)}")
+                    Text(text = "Products: $nbrProducts pcs")
+                    Text(text = "Shipping: ${order.shipping} DH")
+                }
+                IconButton(onClick = { /* Handle action */ }) {
+                    Icon(Icons.Default.ArrowForward, contentDescription = null)
+                }
+            }
+        } else {
+            // Vertical layout
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.align(Alignment.CenterVertically)) {
+                    Text(
+                        text = clientName,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
+                    )
+                    Text(text = "Shipping: ${order.shipping} DH")
+                    Text(text = "Date: ${timestampToDate(order.orderDate)}")
+                    Text(text = "Products: $nbrProducts pcs")
+                }
+                IconButton(onClick = { /* Handle action */ }) {
+                    Icon(Icons.Default.ArrowForward, contentDescription = null)
+                }
+            }
+        }
+    }
+}
+
 
 
 @Composable
@@ -363,93 +449,7 @@ fun ProductSelector(selectedValue: Int, onSelectionChange: (Int) -> Unit) {
 }
 
 
-@Composable
-fun OrderItemView(order: Order, ordersInRow: Int, onClick: () -> Unit) {
-    val orderViewModel: OrderViewModel= hiltViewModel()
-    val clientViewModel:ClientViewModel= hiltViewModel()
-    clientViewModel.onEvent(ClientEvent.GetClientById(order.clientId))
-    val client = clientViewModel.client.collectAsState()
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        val nbrProducts by orderViewModel.getNbrDetailsPerOrder(order.id_order).collectAsState(initial = 0)
 
-        if (ordersInRow == 1) {
-            // Horizontal layout
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .background(Color.Transparent)
-                ) {
-
-                    client.value?.let {
-                        Text(
-                            text = it.name,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
-                        )
-                    }
-                    Text(text = stringResource(id = R.string.date)+" : ${timestampToDate( order.orderDate)}")
-                    Text(text = stringResource(id = R.string.product_nbr)+" : ${nbrProducts} pcs")
-                    Text(text = stringResource(id = R.string.shipping)+" : ${order.shipping} DH")
-
-                }
-                IconButton(onClick = { /* Handle action */ }) {
-                    Icon(Icons.Default.ArrowForward, contentDescription = null)
-                }
-            }
-        } else {
-            // Vertical layout
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                ) {
-                    client.value?.let {
-                        Text(
-                            text = it.name,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
-                        )
-                    }
-                    Text(text = stringResource(id = R.string.shipping)+" : ${order.shipping} DH",
-                        style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
-                    )
-                    Text(text = stringResource(id = R.string.date)+" : ${timestampToDate(order.orderDate)}",
-                        style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
-                    )
-                    Text(text = stringResource(id = R.string.product_nbr)+" : ${nbrProducts} prds",
-                        style = TextStyle(color = MaterialTheme.colorScheme.onSurface)
-                    )
-                }
-                IconButton(onClick = { /* Handle action */ }) {
-                    Icon(Icons.Default.ArrowForward, contentDescription = null)
-                }
-            }
-        }
-    }
-}
 
 
 @Composable
@@ -482,17 +482,7 @@ fun SearchTopAppBar1(
     clientViewModel: ClientViewModel= hiltViewModel(),
     context: Context
 ) {
-    val orderState by orderViewModel.status.collectAsState()
 
-    // Prepare a filtered orders list
-    val orders = (orderState as OrderStatus.Success).orders.collectAsState(initial = emptyList())
-    val filteredOrders = orders.value.filter {
-        clientViewModel.onEvent(ClientEvent.GetClientById(it.clientId))
-        val client=clientViewModel.client.collectAsState()
-        client.value?.name?.contains(searchQuery.value, ignoreCase = true) == true
-                //|| it.product.title.contains(searchQuery.value, ignoreCase = true) ||
-                //it.order.orderDate.toString().contains(searchQuery.value, ignoreCase = true)
-    }
 
     TopAppBar(
         title = {
@@ -518,6 +508,7 @@ fun BottomSheetContent(
     order: Order,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    navController: NavController,
     clientViewModel: ClientViewModel = hiltViewModel(),
     orderViewModel: OrderViewModel = hiltViewModel(),
     productViewModel: ProductViewModel = hiltViewModel()
@@ -526,7 +517,6 @@ fun BottomSheetContent(
     clientViewModel.onEvent(ClientEvent.GetClientById(order.clientId))
     val client = clientViewModel.client.collectAsState()
     val orderDetails = orderViewModel.orderDetail.collectAsState()
-    val product by productViewModel.product.collectAsState() // Collect product state as LiveData/State
 
     orderViewModel.onEvent(OrderEvent.GetOrderDetail(order.id_order))
     val productState by productViewModel.status.collectAsState(initial = ProductStatus.Loading)
@@ -552,11 +542,21 @@ fun BottomSheetContent(
             .background(Color.White) // Background color
     ) {
         item {
-            Text(
-                text = stringResource(id = R.string.order_detail),
-                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp),
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(id = R.string.order_detail),
+                    style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp),
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                TextButton(onClick = { navController.navigate("downloads") }) {
+                    Text(stringResource(id = R.string.orderDownloads))
+                }
+            }
+
         }
 
         client.value?.let {
@@ -582,30 +582,6 @@ fun BottomSheetContent(
             DetailRow(label = stringResource(id = R.string.product_nbr), value = "${orderDetails.value.size} Pcs")
         }
 
-        // Display order details if available
-        items(orderDetails.value) { detail ->
-            // Load product details for each order detail
-            LaunchedEffect(detail.productId) {
-                productViewModel.onEvent(ProductEvent.getProductById(detail.productId)) { product ->
-                    productMap[detail.productId] = product
-                }
-            }
-
-            // Render UI based on whether the product data is available for this detail
-            val product = productMap[detail.productId]
-            when {
-                product == null -> {
-                    // Show a loading view or empty state while waiting for product data
-                    LoadingView()
-                }
-                else -> {
-                    // Once the product data is available, show the OrderDetailRow
-                    OrderDetailRow(detail = detail, product = product, onDelete = {id_pro,id_ord->
-                        orderViewModel.onEvent(OrderEvent.DeleteOrderDetail(id_ord,id_pro))
-                    })
-                }
-            }
-        }
 
         item {
             Spacer(modifier = Modifier.height(24.dp))
@@ -665,6 +641,8 @@ fun BottomSheetContent(
                 }
             }
         }
+        
+
     }
 }
 fun sharePdfFile(context: Context, file: File) {
@@ -737,6 +715,7 @@ fun OrderDetailRow(
             AsyncImage(
                 model = product.image ?: R.drawable.product_icon, // Use default image if null
                 contentDescription = "Product Image",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(54.dp)
                     .clip(CircleShape) // Circular shape for the image
@@ -746,7 +725,7 @@ fun OrderDetailRow(
             Spacer(modifier = Modifier.width(12.dp)) // Add some space between image and text
 
             Column {
-                Text(text = stringResource(id = R.string.product)+" : ${product.title}", fontWeight = FontWeight.Bold)
+                Text(text = product.title, fontWeight = FontWeight.Bold)
                 Text(text = stringResource(id = R.string.price)+" : ${product.price} DH")
             }
         }
@@ -759,7 +738,10 @@ fun OrderDetailRow(
         }
 
         IconButton(onClick = { onDelete(detail.productId, detail.orderId) }) {
-            Icon(Icons.Default.Delete, contentDescription = "Delete Product")
+            Icon(Icons.Default.Delete, contentDescription = "Delete Product", tint = Color(
+                0xFF6F0F08
+            )
+            )
         }
     }
 }
@@ -787,42 +769,7 @@ fun serializeOrder(order: Order): String {
     return Uri.encode(Gson().toJson(order))
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun FilterSection(
-    clients: List<String>,
-    selectedClient: String?,
-    onClientSelected: (String) -> Unit,
-    selectedDate: String?,
-    onDateSelected: (String) -> Unit,
-    openDatePicker: () -> Unit // Add callback to trigger date picker
-) {
-    // Dropdown states
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)) {
 
-
-        // Date Selection
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = selectedDate?.let { stringResource(id = R.string.pick_date)+" $it" } ?: stringResource(id = R.string.pick_date),
-                modifier = Modifier.clickable {
-                    openDatePicker() // Trigger date picker
-                }
-            )
-            IconButton(onClick = {
-                openDatePicker() // Trigger date picker
-            }) {
-                Icon(Icons.Filled.CalendarToday, contentDescription = null)
-            }
-        }
-    }
-}
 
 
 @SuppressLint("ResourceAsColor")
@@ -841,10 +788,12 @@ fun generateAndDownloadPdf(
         color = com.wagdev.inventorymanagement.R.color.black
     }
     val titlePaint = Paint().apply {
-        textSize = 24f
+        textSize = 16f
         isFakeBoldText = true
         color = com.wagdev.inventorymanagement.R.color.black
+        isUnderlineText = true // Add underline to the text
     }
+
     val headerPaint = Paint().apply {
         textSize = 18f
         isFakeBoldText = true
@@ -861,14 +810,14 @@ fun generateAndDownloadPdf(
 
     // Load and draw the static image (logo or icon)
     val logoBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.inventorylogo) // replace with your image resource
-    val scaledLogoBitmap = Bitmap.createScaledBitmap(logoBitmap, 100, 100, false) // adjust size as needed
+    val scaledLogoBitmap = Bitmap.createScaledBitmap(logoBitmap, 120, 120, false) // adjust size as needed
     canvas.drawBitmap(scaledLogoBitmap, 670f, 40f, null) // adjust position as needed
 
     // Translated French Content
-    canvas.drawText("Wagazi", 40f, 60f, titlePaint)
-    canvas.drawText("2 Rés Essafa", 40f, 85f, textPaint)
-    canvas.drawText("Hay Essalam", 40f, 105f, textPaint)
-    canvas.drawText("Agadir", 40f, 125f, textPaint)
+    canvas.drawText(context.getString( R.string.company_name), 40f, 60f, titlePaint)
+    canvas.drawText(context.getString( R.string.company_place), 40f, 85f, textPaint)
+    canvas.drawText(context.getString( R.string.company_cartier), 40f, 105f, textPaint)
+    canvas.drawText(context.getString( R.string.company_address), 40f, 125f, textPaint)
 
     canvas.drawText("Numéro de Facture", 400f, 60f, textPaint)
     canvas.drawText("${order.id_order}", 550f, 60f, textPaint)
@@ -891,14 +840,14 @@ fun generateAndDownloadPdf(
 
     var yOffset = 340f
     var grandTotal = 0.0
-    val topMargin = 20f
+    val topMargin = 30f
 
     orders.forEach { detail ->
         val product = products.find { it.id_product == detail.productId }
         product?.let {
             val imagePath = it.image ?: ""
             val imageBitmap = if (imagePath.isNotBlank()) {
-                loadImageBitmap(imagePath, context)
+                loadImageBitmap(imagePath)
             } else {
                 null
             }
@@ -918,13 +867,13 @@ fun generateAndDownloadPdf(
             canvas.drawText("${detail.nbrItems}", 400f, yOffset + 20f, textPaint)
             canvas.drawText("${"%.2f".format(itemTotal)} DH", 600f, yOffset + 20f, textPaint)
 
-            yOffset += 100f + topMargin
+            yOffset += 10f + topMargin
 
             if (yOffset > pageInfo.pageHeight - 200) {
                 pdfDocument.finishPage(page)
                 page = pdfDocument.startPage(pageInfo)
                 canvas = page.canvas
-                yOffset = 60f
+                yOffset = 10f
             }
         }
     }
@@ -937,17 +886,22 @@ fun generateAndDownloadPdf(
     canvas.drawText("${order.shipping} DH", 600f, yOffset + 60f, textPaint)
     canvas.drawText("TAXE", 500f, yOffset + 80f, textPaint)
     canvas.drawText("0 DH", 600f, yOffset + 80f, textPaint)
-    canvas.drawText("TOTAL", 250f, yOffset + 120f, titlePaint)
+    canvas.drawText("TOTAL", 500f, yOffset + 110f, titlePaint)
     canvas.drawText(
         "${"%.2f".format(grandTotal + 0.0 + order.shipping)} DH",
-        400f,
-        yOffset + 120f,
+        600f,
+        yOffset + 110f,
         titlePaint
     )
-    canvas.drawText("Signature", 650f, yOffset + 120f, textPaint)
+    canvas.drawText("Signature", 650f, yOffset + 160f, textPaint)
     pdfDocument.finishPage(page)
 
-    val fileName = "Orders_${System.currentTimeMillis()}.pdf"
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val formattedDate = dateFormat.format(Date(order.orderDate))
+// Generate a random 4-digit number
+    val randomNum = Random.nextInt(1000, 9999)
+    val clientName = client?.name?.replace(" ", "_") ?: "UnknownClient" // Replace spaces with underscores, default to "UnknownClient" if null
+    val fileName = "Order_${clientName}_${formattedDate}_$randomNum.pdf"
     val downloadsDir =
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
     val filePath = File(downloadsDir, fileName)
@@ -976,7 +930,7 @@ fun generateAndDownloadPdf(
 
 
 // Helper function to load image from Uri
-private fun loadImageBitmap(imagePath: String, context: Context): Bitmap? {
+private fun loadImageBitmap(imagePath: String): Bitmap? {
     return try {
         val file = File(imagePath)
         if (file.exists()) {

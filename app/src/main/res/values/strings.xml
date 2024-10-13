@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Wagazi</string>
-    <string name="specialite">Cosmetic products</string>
+    <string name="specialite">Electronic products</string>
     <string name="add_client">Add Clients</string>
     <string name="add_product">Add Product</string>
     <string name="add_order">Add Order</string>
@@ -89,4 +89,18 @@
     <string name="invoices">Invoices</string>
     <string name="orderDownloads">Orders Downloads</string>
     <string name="passwordnotcorrect">Username or Password incorrect!</string>
+    <string name="company_name">Wagazi</string>
+    <string name="company_address">Agadir</string>
+    <string name="company_cartier">Hay Essalam</string>
+    <string name="company_place">2 Rés Essafa</string>
+    <string name="Settings">Settings</string>
+    <string name="error_name_empty">you should enter the name</string>
+    <string name="error_phone_empty">you should enter the phone number</string>
+    <string name="error_address_empty">you should enter the address</string>
+    <string name="error_nbr_boxes">Enter number of boxes do u have?</string>
+    <string name="error_nbrItemPerBox">How much item in Box?</string>
+    <string name="error_price">Enter the price</string>
+    <string name="error_title">Enter the title</string>
+    <string name="error_select_client">Please select a client</string>
+    <string name="error_select_product">Please select at least one product</string>
 </resources>

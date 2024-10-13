@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,40 +35,38 @@ fun AddEditClientScreen(
     clientViewModel: ClientViewModel = hiltViewModel(),
     client: Client? = null // Receive the Client object
 ) {
-    var id by remember {
-        mutableStateOf(client?.id_client ?: 0)
-    }
+    var id by remember { mutableStateOf(client?.id_client ?: 0) }
     var name by remember { mutableStateOf(client?.name ?: "") }
     var number by remember { mutableStateOf(client?.phoneNumber ?: "") }
     var address by remember { mutableStateOf(client?.address ?: "") }
     var email by remember { mutableStateOf(client?.email ?: "") }
+
+    // Error states for validation
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var numberError by remember { mutableStateOf<String?>(null) }
+    var addressError by remember { mutableStateOf<String?>(null) }
+    val context= LocalContext.current
 
     Scaffold(
         topBar = {
             TopAppBar(
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = null,Modifier.size(20.dp))
+                        Icon(Icons.Default.ArrowBack, contentDescription = null, Modifier.size(20.dp))
                     }
                 },
-
                 title = {
                     Text(
-                        text = if (client != null) stringResource(id = R.string.edit_client) else stringResource(id=R.string.add_client),
+                        text = if (client != null) stringResource(id = R.string.edit_client) else stringResource(id = R.string.add_client),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                 },
                 actions = {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = null
-                    )
+                    Icon(Icons.Default.Settings, contentDescription = null)
                 }
-
-
-                )
+            )
         }
     ) {
         Box(
@@ -84,57 +83,78 @@ fun AddEditClientScreen(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
-
-
-                // Name Input
+                // Name Input with Error Handling
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text(stringResource(id = R.string.name)) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    isError = nameError != null
                 )
+                if (nameError != null) {
+                    Text(text = nameError!!, color = Color.Red, fontSize = 12.sp)
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Number Input
+                // Number Input with Error Handling
                 OutlinedTextField(
                     value = number,
                     onValueChange = { number = it },
                     label = { Text(stringResource(id = R.string.phone)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    isError = numberError != null
                 )
+                if (numberError != null) {
+                    Text(text = numberError!!, color = Color.Red, fontSize = 12.sp)
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Address Input
+                // Address Input with Error Handling
                 OutlinedTextField(
                     value = address,
                     onValueChange = { address = it },
                     label = { Text(stringResource(id = R.string.addr)) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    isError = addressError != null
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Address Input
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text(stringResource(id = R.string.email)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
+                if (addressError != null) {
+                    Text(text = addressError!!, color = Color.Red, fontSize = 12.sp)
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Save Button
+                // Save Button with Validation
                 Button(
                     onClick = {
-                        if (name.isNotEmpty() && number.isNotEmpty() && address.isNotEmpty()) {
+                        // Reset error messages
+                        nameError = null
+                        numberError = null
+                        addressError = null
+
+                        // Validate inputs
+                        val hasError = when {
+                            name.isEmpty() -> {
+                                nameError = context.getString( R.string.error_name_empty)
+                                true
+                            }
+                            number.isEmpty() -> {
+                                numberError = context.getString( R.string.error_phone_empty)
+                                true
+                            }
+                            address.isEmpty() -> {
+                                addressError = context.getString( R.string.error_address_empty)
+                                true
+                            }
+                            else -> false
+                        }
+
+                        if (!hasError) {
                             val clientToSave = Client(
                                 id_client = id,
                                 name = name,
@@ -143,7 +163,7 @@ fun AddEditClientScreen(
                                 address = address,
                             )
                             clientViewModel.onEvent(ClientEvent.AddEditClient(clientToSave))
-                            navController.navigate(Routes.Home.route+"/3")
+                            navController.navigate(Routes.Home.route + "/3")
                         }
                     },
                     modifier = Modifier

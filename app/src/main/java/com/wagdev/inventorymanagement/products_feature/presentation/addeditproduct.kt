@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -52,10 +53,9 @@ fun AddEditProductScreen(
     productViewModel: ProductViewModel = hiltViewModel(),
     product: Product? = null
 ) {
-    var id by remember { mutableLongStateOf(product?.id_product ?: 0) }
+    val id by remember { mutableLongStateOf(product?.id_product ?: 0) }
     var title by remember { mutableStateOf(product?.title ?: "") }
     var price by remember { mutableStateOf(product?.price?.toString() ?: "") }
-
     var nbrBoxes by remember { mutableStateOf(product?.nbrBoxes?.toString() ?: "") }
     var nbrItemPerBox by remember { mutableStateOf(product?.nbrItemsPerBox?.toString() ?: "") }
 
@@ -67,19 +67,23 @@ fun AddEditProductScreen(
     }
 
     var imageUri by remember { mutableStateOf(product?.image?.toString() ?: "") }
-
     val context = LocalContext.current
     val imagePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             imageUri = saveImageLocally(context, it)
         }
     }
-
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
         bitmap?.let {
             imageUri = saveImageLocally(context, it)
         }
     }
+
+    // States for error messages
+    var titleError by remember { mutableStateOf(false) }
+    var priceError by remember { mutableStateOf(false) }
+    var nbrBoxesError by remember { mutableStateOf(false) }
+    var nbrItemPerBoxError by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -117,30 +121,52 @@ fun AddEditProductScreen(
             ) {
 
                 // Image section
-                ProductImage(imageUri,Modifier.size(80.dp))
+                ProductImage(imageUri, Modifier.size(80.dp))
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // Title Input
                 OutlinedTextField(
                     value = title,
-                    onValueChange = { title = it },
-                    label = { Text(stringResource(id=R.string.title)) },
+                    onValueChange = {
+                        title = it
+                        titleError = it.isEmpty()
+                    },
+                    label = { Text(stringResource(id = R.string.title)) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    isError = titleError
                 )
+                if (titleError) {
+                    Text(
+                        text = stringResource(id = R.string.error_title),
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Price Input
                 OutlinedTextField(
                     value = price,
-                    onValueChange = { price = it },
-                    label = { Text(stringResource(id=R.string.price)) },
+                    onValueChange = {
+                        price = it
+                        priceError = it.isEmpty() || it.toDoubleOrNull() == null
+                    },
+                    label = { Text(stringResource(id = R.string.price)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = priceError
                 )
+                if (priceError) {
+                    Text(
+                        text = stringResource(id = R.string.error_price),
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -149,12 +175,21 @@ fun AddEditProductScreen(
                     value = nbrItemPerBox,
                     onValueChange = {
                         nbrItemPerBox = it
+                        nbrItemPerBoxError = it.isEmpty() || it.toIntOrNull() == null
                     },
-                    label = { Text(stringResource(id=R.string.nbrItemPerBox)) },
+                    label = { Text(stringResource(id = R.string.nbrItemPerBox)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = nbrItemPerBoxError
                 )
+                if (nbrItemPerBoxError) {
+                    Text(
+                        text = stringResource(id = R.string.error_nbrItemPerBox),
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -163,12 +198,21 @@ fun AddEditProductScreen(
                     value = nbrBoxes,
                     onValueChange = {
                         nbrBoxes = it
+                        nbrBoxesError = it.isEmpty() || it.toIntOrNull() == null
                     },
                     label = { Text(stringResource(id = R.string.nbr_boxes)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = nbrBoxesError
                 )
+                if (nbrBoxesError) {
+                    Text(
+                        text = stringResource(id = R.string.error_nbr_boxes),
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -186,7 +230,6 @@ fun AddEditProductScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Image Picker and Camera
-
                 Text(stringResource(id = R.string.takeoruploadphoto))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -205,8 +248,13 @@ fun AddEditProductScreen(
                 // Save Button
                 Button(
                     onClick = {
-                        if (title.isNotEmpty() && price.isNotEmpty() && nbrItems.isNotEmpty() && nbrBoxes.isNotEmpty()) {
+                        // Validation check before saving
+                        titleError = title.isEmpty()
+                        priceError = price.isEmpty() || price.toDoubleOrNull() == null
+                        nbrItemPerBoxError = nbrItemPerBox.isEmpty() || nbrItemPerBox.toIntOrNull() == null
+                        nbrBoxesError = nbrBoxes.isEmpty() || nbrBoxes.toIntOrNull() == null
 
+                        if (!titleError && !priceError && !nbrItemPerBoxError && !nbrBoxesError) {
                             val productToSave = Product(
                                 id_product = id,
                                 title = title,
@@ -235,6 +283,7 @@ fun AddEditProductScreen(
 }
 
 
+
 @Composable
 fun ProductImage(imageUri: String,modifier: Modifier=Modifier) {
     val painter = rememberImagePainter(
@@ -244,10 +293,13 @@ fun ProductImage(imageUri: String,modifier: Modifier=Modifier) {
     Image(
         painter = painter,
         contentDescription = "Product Image",
+        contentScale = ContentScale.Crop, // Ensures the image scales to fill the entire space
         modifier = modifier
-            .clip(CircleShape)
-            .background(Color.Gray)
+            .fillMaxSize()  // Ensures the image fills the available space
+            .clip(CircleShape)  // Clips the image to a circular shape
+            .background(Color.Gray)  // Adds a background if needed
     )
+
 }
 
 fun saveImageLocally(context: android.content.Context, uri: Uri): String {

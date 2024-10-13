@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -79,11 +80,22 @@ fun AddEditOrderScreen(
     val products = remember { mutableStateOf<List<Product>>(emptyList()) }
 
     var idClient by remember { mutableStateOf(order?.clientId ?: -1L) }
-
-    // Dropdown states
     var expandedClientDropdown by remember { mutableStateOf(false) }
     var expandedProductDropdown by remember { mutableStateOf(false) }
 
+    var selectedClient by remember { mutableStateOf(order?.let { clients.value.find { client -> client.id_client == it.clientId }?.name } ?: "Select Client") }
+    var shipping by remember { mutableStateOf(0.0) }
+    var idOrder by remember { mutableStateOf(order?.id_order ?: 0L) }
+    var selectedProductQuantities by remember { mutableStateOf<Map<Long, Prod>>(emptyMap()) }
+    val orderDetails by orderViewModel.getOrderDetails(order?.id_order ?: 0L).observeAsState(emptyList())
+
+    // For validation error messages
+    var showClientError by remember { mutableStateOf(false) }
+    var showProductError by remember { mutableStateOf(false) }
+
+    LaunchedEffect(orderDetails) {
+        selectedProductQuantities = orderDetails.associate { it.productId to Prod(it.nbrBoxes, it.nbrItems) }
+    }
 
     // Handle client state
     LaunchedEffect(clientState) {
@@ -110,20 +122,11 @@ fun AddEditOrderScreen(
             else -> products.value = emptyList()
         }
     }
-val context= LocalContext.current
-    var selectedClient by remember { mutableStateOf(order?.let { clients.value.find { client -> client.id_client == it.clientId }?.name } ?: context.getString( R.string.select_client)) }
-    var shipping by remember { mutableStateOf(0.0) }
-    var idOrder by remember { mutableStateOf(order?.id_order ?: -1L) }
-    var selectedProductQuantities by remember { mutableStateOf<Map<Long, Prod>>(emptyMap()) }
-    val orderDetails by orderViewModel.getOrderDetails(order?.id_order ?: -1L).observeAsState(emptyList())
 
-    LaunchedEffect(orderDetails) {
-        selectedProductQuantities = orderDetails.associate { it.productId to Prod(it.nbrBoxes, it.nbrItems) }
-    }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.add_edit_order)) },
+                title = { Text(text = "Add/Edit Order") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
@@ -135,8 +138,8 @@ val context= LocalContext.current
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues), // Padding from Scaffold
-                contentAlignment = Alignment.Center // Center the content
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
             ) {
                 Column(
                     modifier = modifier
@@ -151,7 +154,7 @@ val context= LocalContext.current
                         OutlinedTextField(
                             value = selectedClient,
                             onValueChange = {},
-                            label = { Text(stringResource(id = R.string.select_client)) },
+                            label = { Text("Select Client") },
                             readOnly = true,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -167,12 +170,21 @@ val context= LocalContext.current
                                     onClick = {
                                         selectedClient = client.name
                                         idClient = client.id_client
+                                        showClientError = false
                                         expandedClientDropdown = false
                                     },
                                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                                 )
                             }
                         }
+                    }
+
+                    if (showClientError) {
+                        Text(
+                            text = "Please select a client",
+                            color = Color.Red,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -185,7 +197,7 @@ val context= LocalContext.current
                         OutlinedTextField(
                             value = "Select Products",
                             onValueChange = {},
-                            label = { Text(stringResource(id = R.string.select_products)) },
+                            label = { Text("Select Products") },
                             readOnly = true,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -197,16 +209,10 @@ val context= LocalContext.current
                         ) {
                             products.value.forEach { product ->
                                 DropdownMenuItem(
-                                    text = {
-                                        Row(verticalAlignment = Alignment.CenterVertically,horizontalArrangement = Arrangement.SpaceBetween){
-                                            Text(product.title)
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            product.image?.let { ProductImage(it,modifier = Modifier.size(20.dp)) }
-                                        }
-
-                                           },
+                                    text = { Text(product.title) },
                                     onClick = {
                                         selectedProductQuantities = selectedProductQuantities + (product.id_product to Prod())
+                                        showProductError = false
                                         expandedProductDropdown = false
                                     },
                                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
@@ -215,12 +221,20 @@ val context= LocalContext.current
                         }
                     }
 
+                    if (showProductError) {
+                        Text(
+                            text = "Please select at least one product",
+                            color = Color.Red,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Display Selected Products and Quantities
                     if (selectedProductQuantities.isNotEmpty()) {
                         LazyColumn(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().height(250.dp)
                         ) {
                             items(selectedProductQuantities.keys.toList()) { productId ->
                                 val product = products.value.find { it.id_product == productId }
@@ -234,10 +248,7 @@ val context= LocalContext.current
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        product.image?.let { ProductImage(it,modifier = Modifier.size(20.dp)) }
-Spacer(modifier = Modifier.width(8.dp) )
                                         Text(text = product.title, fontWeight = FontWeight.Bold)
-
                                         var nbrBoxes by remember { mutableStateOf(prod.nbrBoxes.toString()) }
                                         var nbrItems by remember { mutableStateOf(prod.nbrItems.toString()) }
 
@@ -247,11 +258,10 @@ Spacer(modifier = Modifier.width(8.dp) )
                                                 nbrBoxes = it
                                                 selectedProductQuantities = selectedProductQuantities + (productId to Prod(nbrBoxes.toIntOrNull() ?: 0, prod.nbrItems))
                                             },
-                                            label = { Text(stringResource(id = R.string.nbr_boxes)) },
+                                            label = { Text("Nbr Boxes") },
                                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                            modifier = Modifier.width(120.dp)
+                                            modifier = Modifier.width(100.dp)
                                         )
-                                        Spacer(modifier = Modifier.width(8.dp) )
 
                                         OutlinedTextField(
                                             value = nbrItems,
@@ -259,19 +269,15 @@ Spacer(modifier = Modifier.width(8.dp) )
                                                 nbrItems = it
                                                 selectedProductQuantities = selectedProductQuantities + (productId to Prod(prod.nbrBoxes, nbrItems.toIntOrNull() ?: 1))
                                             },
-                                            label = { Text(stringResource(id = R.string.itesm_nbr)) },
+                                            label = { Text("Nbr Items") },
                                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                            modifier = Modifier.width(120.dp)
+                                            modifier = Modifier.width(100.dp)
                                         )
 
-                                        // Delete button
                                         IconButton(onClick = {
                                             selectedProductQuantities = selectedProductQuantities - productId
                                         }) {
-                                            Icon(
-                                                imageVector = Icons.Default.Delete,
-                                                contentDescription = "Delete Product"
-                                            )
+                                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Product")
                                         }
                                     }
                                 }
@@ -281,17 +287,11 @@ Spacer(modifier = Modifier.width(8.dp) )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Order Date Picker (simplified for this example)
-                    val orderDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(order?.orderDate ?: System.currentTimeMillis()))
-                    Text(text = stringResource(id=R.string.date)+" : $orderDate")
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
                     // Shipping Input
                     OutlinedTextField(
                         value = shipping.toString(),
                         onValueChange = { shipping = it.toDoubleOrNull() ?: 0.0 },
-                        label = { Text(stringResource(id = R.string.shipping)) },
+                        label = { Text("Shipping") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
@@ -301,30 +301,34 @@ Spacer(modifier = Modifier.width(8.dp) )
                     // Save Button
                     Button(
                         onClick = {
-                            // Define the new order
-                            val newOrder = Order(
-                                id_order = idOrder ?: 0L,
-                                clientId = idClient,
-                                shipping = shipping,
-                                orderDate = dateToTimestamp(orderDate)
-                            )
+                            if (idClient == -1L) {
+                                showClientError = true
+                            }
+                            if (selectedProductQuantities.isEmpty()) {
+                                showProductError = true
+                            }
 
-                            // Call ViewModel function to save order and details
-                            orderViewModel.saveOrderAndDetails(newOrder, selectedProductQuantities)
+                            if (idClient != -1L && selectedProductQuantities.isNotEmpty()) {
+                                val newOrder = Order(
+                                    id_order = idOrder,
+                                    clientId = idClient,
+                                    shipping = shipping,
+                                    orderDate = System.currentTimeMillis()
+                                )
 
-                            // Navigate back
-                            navController.navigate("home/4")
+                                orderViewModel.saveOrderAndDetails(newOrder, selectedProductQuantities)
+                                navController.navigateUp()
+                            }
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(stringResource(id = R.string.save))
+                        Text("Save")
                     }
                 }
             }
         }
     )
 }
-
 
 
 

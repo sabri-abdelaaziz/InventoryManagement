@@ -90,6 +90,20 @@
     <string name="authentication">Authentification</string>
     <string name="invoices">Factures</string>
     <string name="orderDownloads">Téléchargements de commandes</string>
+    <string name="company_name">Wagazi</string>
+    <string name="company_address">Agadir</string>
+    <string name="company_cartier">Hay Essalam</string>
+    <string name="company_place">2 Rés Essafa</string>
+    <string name="Settings">Paramètres</string>
+    <string name="error_name_empty">Vous devez entrer le nom</string>
+    <string name="error_phone_empty">Vous devez entrer le numéro de téléphone</string>
+    <string name="error_address_empty">Vous devez entrer l\'adresse</string>
+    <string name="error_nbr_boxes">Entrez le nombre de boîtes que vous avez</string>
+    <string name="error_nbrItemPerBox">Combien d\'articles dans la boîte ?</string>
+    <string name="error_price">Entrez le prix</string>
+    <string name="error_title">Entrez le titre</string>
+    <string name="error_select_client">Veuillez sélectionner un client</string>
+    <string name="error_select_product">Veuillez sélectionner au moins un produit</string>
 
 
     <string name="passwordnotcorrect">Username ou Password incorrect!</string>

@@ -89,6 +89,20 @@
     <string name="authentication">المصادقة</string>
     <string name="invoices">الفواتير</string>
     <string name="orderDownloads">تحميلات الطلبات</string>
+    <string name="company_name">Wagazi</string>
+    <string name="company_address">أكادير</string>
+    <string name="company_cartier">حي السلام</string>
+    <string name="company_place">2 إقامة الصفا</string>
+    <string name="Settings">الإعدادات</string>
+    <string name="error_name_empty">يجب إدخال الاسم</string>
+    <string name="error_phone_empty">يجب إدخال رقم الهاتف</string>
+    <string name="error_address_empty">يجب إدخال العنوان</string>
+    <string name="error_nbr_boxes">أدخل عدد الصناديق المتوفرة</string>
+    <string name="error_nbrItemPerBox">كم عدد العناصر في الصندوق؟</string>
+    <string name="error_price">أدخل السعر</string>
+    <string name="error_title">أدخل العنوان</string>
+    <string name="error_select_client">يرجى اختيار عميل</string>
+    <string name="error_select_product">يرجى اختيار منتج واحد على الأقل</string>
 
     <string name="passwordnotcorrect">اسم المستخدم او كلمة السر غير صحيحة!</string>
 </resources>

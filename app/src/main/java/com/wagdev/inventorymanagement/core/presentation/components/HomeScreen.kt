@@ -78,7 +78,7 @@ fun HomeScreen(
                 .height(110.dp) // Set a fixed height for the Box
         ) {
             Image(
-                painter = painterResource(id = R.drawable.beauty),
+                painter = painterResource(id = R.drawable.elec),
                 contentDescription = stringResource(id = R.string.app_name),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -124,7 +124,7 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(5) { index -> // Use the number of items you have
+            items(6) { index -> // Use the number of items you have
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -137,6 +137,7 @@ fun HomeScreen(
                         2 -> IconWithText(iconRes = R.drawable.clients, label = stringResource(id = R.string.clients), des = "home/3", navController = navController)
                         3 -> IconWithText(iconRes = R.drawable.factors, label = stringResource(id = R.string.orders), des = "home/4", navController = navController)
                         4 -> IconWithText(iconRes = R.drawable.files, label = stringResource(id = R.string.invoices), des = "downloads", navController = navController)
+                        5 -> IconWithText(iconRes = R.drawable.baseline_settings_24, label = stringResource(id = R.string.Settings), des = "settings", navController = navController)
                     }
                 }
             }
@@ -161,12 +162,15 @@ fun HomeScreen(
                     horizontalAlignment = Alignment.CenterHorizontally // Center content horizontally in the column
                 ) {
                     it.image?.let { it1 ->
-                        ProductImage(it1,
+                        ProductImage(
+                            it1,
                             modifier = Modifier
-                                .size(60.dp) // Set a fixed size for the image
+                                .fillMaxSize() // Makes the image take all available space in the parent
                                 .clip(RoundedCornerShape(10.dp))
-                                .align(Alignment.CenterHorizontally))
+                                .align(Alignment.CenterHorizontally)
+                        )
                     }
+
                     Spacer(modifier = Modifier.height(4.dp)) // Add space between the image and text
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

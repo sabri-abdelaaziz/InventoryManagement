@@ -197,7 +197,7 @@ fun ProductsScreen(
                                 scope.launch { sheetState.hide() }
                                 showBottomSheet = false
 
-                                navController.navigate(Routes.Home.route + "/3")
+                                navController.navigate(Routes.Home.route + "/2")
                             }
                         )
                     }

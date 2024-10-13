@@ -3,6 +3,10 @@ package com.wagdev.inventorymanagement.core.controllers
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
@@ -25,6 +29,7 @@ import com.wagdev.inventorymanagement.products_feature.domain.model.Product
 import com.wagdev.inventorymanagement.products_feature.presentation.AddEditProductScreen
 import com.wagdev.inventorymanagement.products_feature.presentation.ProductsScreen
 import com.wagdev.inventorymanagement.setting_feature.presentation.SettingsScreen
+import com.wagdev.inventorymanagement.setting_feature.presentation.SettingsUtils
 
 import com.wagdev.inventorymanagement.store_feature.presentation.StockScreen
 import org.json.JSONObject
@@ -54,6 +59,7 @@ fun Navigation(
         composable(Routes.Downloads.route){
             PdfListScreen(LocalContext.current,navController)
         }
+
 
         composable(
             route = "addeditproduct?product={product}",
@@ -104,7 +110,14 @@ fun Navigation(
             FactureScreen()
         }
         composable(Routes.Settings.route){
-            SettingsScreen(context = LocalContext.current)
+            val context= LocalContext.current
+            val settingsUtils = remember { SettingsUtils(context) }
+            var isDarkThemeEnabled by remember { mutableStateOf(settingsUtils.isDarkTheme) }
+
+            SettingsScreen(context = LocalContext.current,navController=navController, onThemeChange = { isDarkTheme ->
+                isDarkThemeEnabled = isDarkTheme
+                settingsUtils.isDarkTheme = isDarkTheme
+            })
         }
 
 

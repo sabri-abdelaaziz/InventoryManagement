@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Task
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.LocalActivity
 import androidx.compose.material.icons.rounded.Money
 import androidx.compose.material.icons.rounded.MoneyOffCsred
@@ -78,15 +79,15 @@ fun DrawerContent(
             root =Routes.Home.route+"/4" ,
         ),
         DrawerItem(
-            icon = Icons.Rounded.Newspaper,
-            label = stringResource(id = R.string.features),
-            root =Routes.Facture.route ,
+            icon = Icons.Rounded.Download,
+            label = stringResource(id = R.string.orderDownloads),
+            root =Routes.Downloads.route ,
         ),
         DrawerItem(
             icon = Icons.Rounded.Settings,
             label = stringResource(id = R.string.settings),
             root =Routes.Settings.route,
-        )
+        ) ,
 
     )
 
